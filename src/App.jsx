@@ -18,7 +18,6 @@ import Offers from "./components/offer/Offers";
 import OfferForm from "./components/offer/OfferForm";
 
 const App = () => {
-  console.log("ENVIROMENT IS :", process.env.REACT_APP_API_BACKEND)
   return (
     <Routes>
       <Route path="/" element={<Layout></Layout>}>

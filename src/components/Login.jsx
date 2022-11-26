@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Joi from "joi-browser";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import jwt_decode from "jwt-decode";
 
-import { Input } from "./common";
+import { Input, Spinner } from "./common";
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import useToggle from "../hooks/useToggle";
@@ -16,6 +16,7 @@ const LOGIN_URL = "/login";
 const Login = () => {
   const inicialState = { username: "", password: "" };
   const [check, toggleCheck] = useToggle("persist", false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +32,7 @@ const Login = () => {
   const doSubmit = async () => {
     setOrderPage(1);
     setOfferPage(1);
+    setLoading(true);
     try {
       const response = await axios.post(LOGIN_URL, JSON.stringify(form), {
         headers: { "Content-Type": "application/json" },
@@ -41,11 +43,12 @@ const Login = () => {
 
       setAuth({ username: form.username, roles, accessToken });
       toast.success(`🦄🤑😁 Welcome: ${form.username} `);
+      setLoading(false);
       navigate(from, { replace: true });
     } catch (err) {
-      console.log(err)
-      if (!err?.response) toast.error(`🤐😳😱 No Server Response`);
-      //toast.error(`🤐😳😱 ${err?.message}`);
+      setLoading(false);
+      if (!err?.response) return toast.error(`🤐😳😱 No Server Response`);
+      if (!err?.response?.data) return toast.error(`🤐😳😱 ${err?.message}`);
       toast.error(`🤐😳😱 ${err?.response?.data}`);
     }
   };
@@ -63,7 +66,7 @@ const Login = () => {
         <h1 className="text-center">
           DOBRO DOŠLI U APLIKACIJU BAZA DEKORATIVNIH NARUDŽBI 🤗 😜 🤭
         </h1>
-        <form onSubmit={handleSubmit} autoComplete="on">
+        <form onSubmit={handleSubmit} autoComplete="on" disabled={loading}>
           <Input
             name="username"
             label="Korisničko Ime"
@@ -80,8 +83,8 @@ const Login = () => {
             error={errors.password}
           ></Input>
 
-          <button type="submit" className="btn11">
-            Login
+          <button type="submit" className="btn11" disabled={loading}>
+            Login {loading ? <Spinner icon={true}></Spinner> : null}
           </button>
           <div className="persistCheck">
             <input
@@ -123,7 +126,8 @@ const Container = styled.div`
   .btn11 {
     box-sizing: border-box;
     appearance: none;
-    background-color: #fff;
+    background-color: #333;
+    color: #fff;
     border-radius: 0.6em;
     cursor: pointer;
     display: flex;
